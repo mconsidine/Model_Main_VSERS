@@ -35,8 +35,10 @@ file_path <- paste0("Data/")
 ## Salary scale type 1: Growth only depends on age
 # Example: PA-PSERS
 
-SS <- read.xlsx2(paste0(file_path, "PA-PSERS.xlsx"), sheetName = "SalaryGrowth", colClasses = "numeric", startRow = 3, stringsAsFactors = FALSE)
-SS %<>%  rename(age.match = age) %>% right_join(data.frame(age = 20:70) %>% mutate(age.match = floor(age/10)*10)) %>% 
+#SS <- read.xlsx2(paste0(file_path, "PA-PSERS.xlsx"), sheetName = "SalaryGrowth", colClasses = "numeric", startRow = 3, stringsAsFactors = FALSE) #MattC 
+#SS %<>%  rename(age.match = age) %>% right_join(data.frame(age = 20:70) %>% mutate(age.match = floor(age/10)*10)) %>% #MattC
+SS <- read.xlsx2(paste0(file_path, MATTC_plandataworkbook), sheetName = MATTC_plansalarygrowthsheet, colClasses = "numeric", startRow = 3, stringsAsFactors = FALSE) #MATTC
+SS %<>%  rename(age.match = age) %>% right_join(data.frame(age = MATTC_plansalarystart:MATTC_plansalaryend) %>% mutate(age.match = floor(age/MATTC_plansalaryincrement)*MATTC_plansalaryincrement)) %>% 
   select(-age.match) %>% 
   mutate(sscale.hist.rate = cton(growth)/100)
 
@@ -53,11 +55,19 @@ SS %<>%  rename(age.match = age) %>% right_join(data.frame(age = 20:70) %>% muta
 # age x yos
 # age 25 25-29 30-34 35-39 40-44 45-49 50-54 55-59 60-64 Over 64
 # yos 0-4	 5-9	 10-14	15-19	20-24	25-29	30-34	35-39	40+
-age.mid <- c(25, seq(27, 62, 5), 66)
-yos.mid <- c(seq(2, 37, 5), 42)
+##age.mid <- c(25, seq(27, 62, 5), 66) #MattC
+##yos.mid <- c(seq(2, 37, 5), 42) #MattC
+
+age.mid <- c(MATTC_activestart, 
+             seq(MATTC_activestart+MATTC_activeincrement, MATTC_activeend-MATTC_activeincrement, MATTC_activeblocksize), 
+             MATTC_activeend+MATTC_activeincrement)
+
+yos.mid <- c(seq(MATTC_yosincrement, MATTC_yosend-MATTC_yosincrement, MATTC_yosblocksize),  
+             MATTC_yosend+MATTC_yosincrement)
 
 # convert to the ea x age format 
-df <- readWorksheetFromFile(paste0(file_path, "PA-PSERS.xlsx"), sheet="PA-PSERS", header=FALSE, region="A5:L24")
+#df <- readWorksheetFromFile(paste0(file_path, "PA-PSERS.xlsx"), sheet="PA-PSERS", header=FALSE, region="A5:L24") #MattC
+df <- readWorksheetFromFile(paste0(file_path, MATTC_plandataworkbook), sheet=MATTC_plansheet1, header=FALSE, region=MATTC_plansheetregion1)
 names(df) <- c("order", "tabletype", "agegrp", yos.mid)
 
 avgpay <- df %>% filter(tabletype=="avgpay") %>% 
@@ -70,10 +80,13 @@ avgpay <- df %>% filter(tabletype=="avgpay") %>%
   splong("age", method = "natural") %>%
   splong("yos", method = "natural")
 
-avgpay <- (expand.grid(age = 20:70, yos = 2:42) %>% mutate(age.match = ifelse(age < 25, 25,ifelse(age>66, 66,age)))) %>% 
+#avgpay <- (expand.grid(age = 20:70, yos = 2:42) %>% mutate(age.match = ifelse(age < 25, 25,ifelse(age>66, 66,age)))) %>% 
+avgpay <- (expand.grid(age = MATTC_plansalarystart:MATTC_plansalaryend, 
+                       yos = MATTC_yosincrement:MATTC_yosend+MATTC_yosincrement) %>% mutate(age.match = ifelse(age < MATTC_activestart, MATTC_activestart,ifelse(age>MATTC_activeend+MATTC_activeincrement, MATTC_activeend+MATTC_activeincrement,age)))) %>% 
   left_join(avgpay %>% rename(age.match = age))
 
-avgpay <- (expand.grid(age = 20:70, yos = 0:50) %>% mutate(yos.match = ifelse(yos < 2, 2, ifelse(yos>42, 42, yos)))) %>% 
+#avgpay <- (expand.grid(age = 20:70, yos = 0:50) %>% mutate(yos.match = ifelse(yos < 2, 2, ifelse(yos>42, 42, yos)))) %>% 
+avgpay <- (expand.grid(age = MATTC_plansalarystart:MATTC_plansalaryend, yos = 0:50) %>% mutate(yos.match = ifelse(yos < MATTC_yosincrement, MATTC_yosincrement, ifelse(yos>MATTC_yosend+MATTC_yosincrement, MATTC_yosend+MATTC_yosincrement, yos)))) %>% 
   left_join(avgpay %>% rename(yos.match = yos))
 
 avgpay %<>% select(-age.match, -yos.match) %>% 
@@ -84,8 +97,8 @@ avgpay %<>% select(-age.match, -yos.match) %>%
 #Display in matrix form  
 # avgpay %<>% select(-yos) %>% 
 #   spread(age, avgpay, fill = 0)
-# rownames(avgpay) <- avgpay$ea
-# avgpay
+ rownames(avgpay) <- avgpay$ea #MattC uncommented
+ avgpay #MattC uncommented
 
 
 
@@ -146,8 +159,8 @@ avgben %<>%
 # Display in matrix form  
 # avgben %<>% 
 #   spread(age, avgben, fill = 0)
-# rownames(avgben) <- avgben$ea
-# avgben
+ rownames(avgben) <- avgben$ea #MattC uncommented
+ avgben #MattC uncommented
 
 # there are negative values at the upper left corner. But it should be ok if we assume there is no retirees under age 52. 
 

@@ -6,7 +6,7 @@
 #                                               Preamble ####
 #*********************************************************************************************************
 
-rm(list = ls())
+#rm(list = ls()) #MattC - moved to overlay script so custom data not deleted
 gc()
 
 library(knitr)
@@ -27,28 +27,29 @@ library(xlsx)
 # devtools::install_github("donboyd5/decrements")
 # devtools::install_github("donboyd5/pp.prototypes")
 
-library(pp.prototypes)
+#library(pp.prototypes) #MattC omit because using VT data
 library(decrements)               # mortality and termination for now
 
 
 # Initial actives and retirees 
   # Load data for new prototypes before they are in the pp.prototypes package
-load("Data/2015-10-07/actives.rda")
-load("Data/2015-10-07/retirees.rda") 
+#load("Data/2015-10-07/actives.rda") #MattC omit because using VT data
+#load("Data/2015-10-07/retirees.rda")  #MattC omit because using VT data
 
 
 # Decrements
-load("Data/2015-10-07/retrates.rda");  retrates %<>% dplyr::rename(qxr = retrate)
+#load("Data/2015-10-07/retrates.rda");  retrates %<>% dplyr::rename(qxr = retrate)  #MattC omit because using VT data
 # load("Data/retrates_AZ.RData"); retrates <- retrate_AZ
-load("Data/2015-10-07/termrates.rda"); termrates %<>% dplyr::rename(qxt = termrate) # %>% mutate(qxt = 0.5*qxt)
-load("Data/2015-10-07/mortality.rda")
+#load("Data/2015-10-07/termrates.rda"); termrates %<>% dplyr::rename(qxt = termrate) # %>% mutate(qxt = 0.5*qxt) #MattC omit because using VT data
+#load("Data/2015-10-07/mortality.rda") #MattC omit because using VT data
 load("Data/winklevossdata.rdata") # disability, disability mortaity and early retirement
 
 # Salary scale
-load("Data/2015-10-07/salgrowth.rda"); salgrowth %<>% mutate(age = NULL)
+#load("Data/2015-10-07/salgrowth.rda"); salgrowth %<>% mutate(age = NULL) #MattC omit because using VT data
 
 
 source("Functions.R")
+source("MattC_graphics.R") #MattC overwrite draw quantile routine
 
 devMode <- FALSE # Enter development mode if true. Parameters and initial population will be imported from Dev_Params.R instead of the RunControl file. 
 
@@ -67,6 +68,7 @@ devMode <- FALSE # Enter development mode if true. Parameters and initial popula
 # Calibrate term rates, mortality rates and retirement rates to approximately match workforce flows of AZ-PERS
 # in 2013.  
 
+#MattC Should adjust 3 lines below for VT????
 termrates %<>% mutate(qxt = 1.2 * qxt)
 
 mortality %<>% mutate(qxm = 0.6 * qxm) %>% 
@@ -85,7 +87,7 @@ folder_run <- "IO_M2.1_new"
 # folder_run <- "IO_M1_new"
 # folder_run <- "IO_M2.1history_new" 
  
-filename_RunControl <- dir(folder_run, pattern = "^RunControl")
+filename_RunControl <- dir(folder_run, pattern = "^MattC_RunControl") #MattC
 
 path_RunControl <- paste0(folder_run, "/" ,filename_RunControl)
 
@@ -135,7 +137,7 @@ if ((paramlist$return_type == "simple" & paramlist$ir.sd == 0) |
 }
 
 ## Run the model
-# source("Model_Master.R", echo = TRUE)
+ source("Model_Master.R", echo = TRUE)
 }
 
 

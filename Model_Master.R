@@ -293,7 +293,10 @@ outputs_list <- list(paramlist = paramlist,
 if(!file.exists(folder_run)) dir.create(folder_run)
 
 # filename_outputs <- paste0("Outputs_",  paramlist$runname, "_" , format(Sys.Date(), "%m-%d-%Y"), ".RData")
-filename_outputs <- paste0("Outputs_",  paramlist$runname, ".RData")
+#filename_outputs <- paste0("Outputs_",  paramlist$runname, ".RData")
+
+#MATTC add timestamp to filename in next line.  Dont forget to change pattern in KnitR .Rmd file around line 44
+filename_outputs <- paste0("Outputs_",  paramlist$runname, "_" , format(Sys.time(), "%Y%m%d%H%M%S",tz="EST5EDT"), ".RData") #MattC
 
  save(outputs_list, file = paste0(folder_run,"/", filename_outputs))
 
