@@ -107,7 +107,9 @@ source("IO_M2.1_new/Report_M2.1b_MFC2017.R") #has problem with one version of df
 #source("IO_M2.1history_new/getReturn.R")
 
 #source("IO_M2.1_new/Analysis_Outputs_M2.1_new.Rmd")
-#source("IO_M2.1_new/Analysis_Outputs_M2.1a_report.Rmd")
+#source("IO_M2.1_new/Analysis_Outputs_M2.1a_report.Rmd") #has similar problem
 #source("IO_M2.1_new/Analysis_Outputs_M2.1_June2016.Rmd")
 #source("IO_M2.1history_new/Analysis_Outputs_M2.1history_new.Rmd")
 
+source("IO_M1_new/Analysis_Outputs_M1_CA_trip_May2016.Rmd")
+source("IO_M1_new/Analysis_Outputs_M1_new.Rmd")
