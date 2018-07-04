@@ -34,7 +34,7 @@ library(stringr)
 library(xlsx)
 
 source("../Functions.R")
-rm(list = ls())
+#rm(list = ls())
 
 run_knitr <- TRUE #set to TRUE before knitting.
 # When knitting HTML files, the working directory will be changed to the on where the .rmd file is located.
