@@ -122,7 +122,7 @@ tab.risk %<>% mutate(runname = factor(runname, levels = tab.runname)) %>%
 # tab.risk.selected %>% filter(grepl("^B", runname)) %>%  kable(digits = 3)
 
 
-write.xlsx2(tab.risk, file = paste0(IO_folder,"/", "Analysis_Investment/Inv_Tables.xlsx"), sheetName = "risks1", append = TRUE)
+write.xlsx2(tab.risk, file = paste0(IO_folder,"/", "Analysis_Investment/Inv_Tables_",format(Sys.time(), "%Y%m%d-%H%M%S"),".xlsx"), sheetName = "risks1", append = FALSE) #MattC
 
 
 
