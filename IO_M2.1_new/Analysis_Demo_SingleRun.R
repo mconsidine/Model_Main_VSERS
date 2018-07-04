@@ -195,4 +195,44 @@ runs_single_labels <- read.table(text = runs_single_labels, header = TRUE, sep =
 apply(as.matrix(c(56, 228)), 1, gpanel.yy)
 apply(as.matrix(c(75, 138,254, 934, 424, 646)), 1, gpanel.yy)
 
+#------------------------
 
+label <- runs_single_labels
+runs_single <- c("D1F075-average", "D1F075_mature1-gn1", "D1F075_mature2-gn1", "D1F075-immature_g1")
+simnum <- 56
+det.runs = "D1F075_average"
+
+df_single <- results_all %>%  filter(runname %in% runs_single, year <= 110) %>% 
+  filter(sim == simnum) %>%
+  left_join(label) %>% 
+  mutate(run.label = ifelse(is.na(run.label), runname, run.label),
+         runname   = ifelse(sim == 0, paste0(runname,   "-Determ"), runname),
+         run.label = ifelse(sim == 0, paste0(run.label, "-Determ"), run.label)) %>%  
+  group_by(runname, sim)
+ 
+ls <- 1.25 # linesize
+ps <- 2.25 # pointsize
+
+p5 <- ggplot(data=filter(df_single, sim == simnum, runname == runs_single[1]) %>% # any run will do
+               select(year, B, B.v) %>% 
+               gather(variable, value, -year, -runname, -sim),
+             aes(x = year, y = value*100, group = variable)) +
+  geom_point(aes(colour=variable, shape=variable), size=ps) +
+  geom_line(aes(colour=variable), size=ls) +
+  scale_color_discrete(name = "",    labels = c("B", "B.v")) +
+  scale_shape_discrete(name = "",    labels = c("B", "B.v")) +
+  scale_linetype_discrete(name = "", labels = c("B", "B.v")) +
+  scale_y_continuous(breaks = c(seq(-50, 5, 5), 7.5, seq(10, 50, 5)), name = "$") + 
+  scale_x_continuous(breaks = seq(0, 30, 5)) +
+  geom_hline(yintercept = 7.5) +
+  geom_hline(yintercept = 0, linetype="dotdash", size=.5) +
+  labs(title=paste0("Benefits sim # ", simnum ), x = "Year") +
+  theme(plot.title=element_text(size=14), legend.text = element_text(size = 11))  + theme_bw()
+
+p5
+
+#-----------------------
+load(paste0(IO_folder, "/Outputs_I8F075-4.RData"))
+test <- outputs_list$results
+test2 <- (test[which(test[,"sim"]==56),c("B.v")])
+plot(test2/((1+0.75)^(seq(1,60,1))))

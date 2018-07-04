@@ -2,7 +2,7 @@
 # Yimeng Yin
 # 10/27/2015
 
-rm(list = ls())
+#rm(list = ls())
 
 library(reshape2)
 library(plyr)
