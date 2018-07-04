@@ -32,11 +32,11 @@ library(grid)
 library(gridExtra)
 library(stringr)
 
-source("Functions.R")
+#source("Functions.R")
 
-rm(list = ls())
+#rm(list = ls())
 
-run_knitr <- F  #set to TRUE before knitting.
+run_knitr <- T  #set to TRUE before knitting.
 # When knitting HTML files, the working directory will be changed to the on where the .rmd file is located.
 # The relative paths must be modified if they are not relative to the folder the .rmd file is located. 
 # (When running the code line by line, it is covenient to set the paths relative to the folder of main model.)
