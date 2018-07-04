@@ -33,16 +33,16 @@ library(decrements)               # mortality and termination for now
 
 # Initial actives and retirees 
   # Load data for new prototypes before they are in the pp.prototypes package
-#load("Data/2015-10-07/actives.rda") #MattC omit because using VT data
-#load("Data/2015-10-07/retirees.rda")  #MattC omit because using VT data
+#load("Data/2015-10-07/actives.rda") #MattC omit when get VT data
+#load("Data/2015-10-07/retirees.rda")  #MattC omit when get VT data
 
 
 # Decrements
-#load("Data/2015-10-07/retrates.rda");  retrates %<>% dplyr::rename(qxr = retrate)  #MattC omit because using VT data
-# load("Data/retrates_AZ.RData"); retrates <- retrate_AZ
-#load("Data/2015-10-07/termrates.rda"); termrates %<>% dplyr::rename(qxt = termrate) # %>% mutate(qxt = 0.5*qxt) #MattC omit because using VT data
-#load("Data/2015-10-07/mortality.rda") #MattC omit because using VT data
-load("Data/winklevossdata.rdata") # disability, disability mortaity and early retirement
+load("Data/2015-10-07/retrates.rda");  retrates %<>% dplyr::rename(qxr = retrate)  #MattC omit when get VT data
+#load("Data/retrates_AZ.RData"); retrates <- retrate_AZ #MattC omit when get VT data
+load("Data/2015-10-07/termrates.rda"); termrates %<>% dplyr::rename(qxt = termrate) # %>% mutate(qxt = 0.5*qxt) #MattC omit when get VT data
+load("Data/2015-10-07/mortality.rda") #MattC omit when get VT data
+load("Data/winklevossdata.rdata") # disability, disability mortaity and early retirement #MattC omit when get VT data
 
 # Salary scale
 #load("Data/2015-10-07/salgrowth.rda"); salgrowth %<>% mutate(age = NULL) #MattC omit because using VT data
