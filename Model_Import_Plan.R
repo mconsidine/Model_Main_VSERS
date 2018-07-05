@@ -114,9 +114,9 @@ assign_parmsList(.paramlist,        envir = environment())
 sal <- actives %>% select(age, ea, salary)
 #x <- sal %>% spread(age, salary)
 
-#sal.start <- splong(sal, "ea", range_ea) %>% filter(age == ea) %>% select(-age) %>% splong("ea", range_ea) %>% mutate(age = ea) #MattC don't have age=ea examples in dataset
-sal.start <- splong(sal, "ea", range_ea) %>% filter(age-ea==2) %>% select(-age) %>% splong("ea",NULL) %>% mutate(age=ea) #MattC simulating
-sal.start$salary <- sal.start$salary/(1.025^2) #MattC deflate salary by 2 years of inflation
+sal.start <- splong(sal, "ea", range_ea) %>% filter(age == ea) %>% select(-age) %>% splong("ea", range_ea) %>% mutate(age = ea) #MattC don't have age=ea examples in dataset
+#sal.start <- splong(sal, "ea", range_ea) %>% filter(age-ea==2) %>% select(-age) %>% splong("ea",range_ea) %>% mutate(age=ea) #MattC simulating
+#sal.start$salary <- sal.start$salary/(1.025^2) #MattC deflate salary by 2 years of inflation
 
 sal <- rbind(sal, sal.start) 
  
@@ -344,6 +344,3 @@ entrants_dist <- get_entrantsDist()
 # plot(entrants_dist)
 
 # save(entrants_dist, file = "entrants_dist.average.RData")
-
-
-

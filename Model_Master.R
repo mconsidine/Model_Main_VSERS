@@ -70,7 +70,8 @@ if(devMode) source("Dev_Params.R") else {
   
   # Define Other parameters that depend on the fundamental parameters just imported. 
   paramlist$range_age <- with(Global_paramlist, min.age:max.age)
-  paramlist$range_ea  <- c(Global_paramlist$min.age:(paramlist$r.max - 1))
+#  paramlist$range_ea  <- c(Global_paramlist$min.age:(paramlist$r.max - 1)) #MattC possible problem here with ret.max>ea
+  paramlist$range_ea  <- c(Global_paramlist$min.age:(max(actives$ea) - 1)) #MattC possible problem here with ret.max>ea; want to preserve r.max?
   
   paramlist$v <- with(paramlist, 1/(1 + i))  # discount factor, just for convenience
   

@@ -41,6 +41,7 @@ library(decrements)               # mortality and termination for now
 load("Data/2015-10-07/retrates.rda");  retrates %<>% dplyr::rename(qxr = retrate)  #MattC omit when get VT data
 #load("Data/retrates_AZ.RData"); retrates <- retrate_AZ #MattC omit when get VT data
 load("Data/2015-10-07/termrates.rda"); termrates %<>% dplyr::rename(qxt = termrate) # %>% mutate(qxt = 0.5*qxt) #MattC omit when get VT data
+termrates$planname <- rep("VSERS",Global_params$nyear+1) #MattC kludge/temp fix to get data in for VT
 load("Data/2015-10-07/mortality.rda") #MattC omit when get VT data
 load("Data/winklevossdata.rdata") # disability, disability mortaity and early retirement #MattC omit when get VT data
 
@@ -53,10 +54,10 @@ source("MattC_graphics.R") #MattC overwrite draw quantile routine
 
 devMode <- FALSE # Enter development mode if true. Parameters and initial population will be imported from Dev_Params.R instead of the RunControl file. 
 
-#retirees %<>% mutate(nretirees = 0)
-#actives %<>% mutate(nactives = 0) 
-#actives
-#retrates %<>% mutate(qxr = ifelse(age == 65, 1, 0)) 
+retirees %<>% mutate(nretirees = 0)
+actives %<>% mutate(nactives = 0) 
+actives
+retrates %<>% mutate(qxr = ifelse(age == 65, 1, 0)) 
 
 
 
@@ -115,7 +116,7 @@ runlist
 
 
 ## Run selected plans 
-
+#runName = runlist #MattC temp kludge for 1 run test
 for (runName in runlist){
 
 suppressWarnings(rm(paramlist, Global_paramlist))
@@ -139,7 +140,6 @@ if ((paramlist$return_type == "simple" & paramlist$ir.sd == 0) |
 ## Run the model
  source("Model_Master.R", echo = TRUE)
 }
-
 
 
 

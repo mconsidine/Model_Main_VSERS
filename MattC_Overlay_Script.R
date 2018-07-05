@@ -196,11 +196,12 @@ library(XLConnect) # slow but convenient because it reads ranges
         MATTCsalgrowth <- structure( #MattC new structure added
           list(
             planname = MATTCplannames, 
-            age = MATTCageranges,
+          #  age = MATTCageranges,
             yos = as.numeric(rep(NA,length(MATTCageranges))), 
             salgrowth = MATTCsscale.rates.assume
           ), 
-          .Names = c("planname", "age", "yos", "salgrowth"), 
+          .Names = c("planname", #"age",
+                     "yos", "salgrowth"), 
           class = "data.frame",
           row.names = c(NA, -length(MATTCplannames))
         )
@@ -349,6 +350,7 @@ library(XLConnect) # slow but convenient because it reads ranges
 #  } else {
 #  print("Something wrong with devtools or microbenchmark")
 #}
-
+source("MattC_graphics.R")
+source("MattC_charts.R")
 
  
