@@ -163,9 +163,9 @@ library(XLConnect) # slow but convenient because it reads ranges
                                                          to = MATTCsalgrowth.assume.age.end, by = 1))
         ############################################################
         #plan names
-        MATTCplannames = c( rep("VMERS.yos", MATTCsalgrowth.assume.age.rangesize), 
-                            rep("VSERS.yos", MATTCsalgrowth.assume.age.rangesize), 
-                            rep("VSTRS.yos", MATTCsalgrowth.assume.age.rangesize))
+        MATTCplannames = c( rep("VMERS", MATTCsalgrowth.assume.age.rangesize), 
+                            rep("VSERS", MATTCsalgrowth.assume.age.rangesize), 
+                            rep("VSTRS", MATTCsalgrowth.assume.age.rangesize))
         ############################################################
         #active age ranges for assumed salary growth data
         MATTCageranges = c( seq(from = MATTCsalgrowth.assume.age.start, to = MATTCsalgrowth.assume.age.end, by = 1),
@@ -192,20 +192,7 @@ library(XLConnect) # slow but convenient because it reads ranges
           class = "data.frame",
           row.names = c(NA, -length(MATTCplannames))
         )
-        
-        MATTCsalgrowth <- structure( #MattC new structure added
-          list(
-            planname = MATTCplannames, 
-          #  age = MATTCageranges,
-            yos = as.numeric(rep(NA,length(MATTCageranges))), 
-            salgrowth = MATTCsscale.rates.assume
-          ), 
-          .Names = c("planname", #"age",
-                     "yos", "salgrowth"), 
-          class = "data.frame",
-          row.names = c(NA, -length(MATTCplannames))
-        )
-        
+
         ############################################################
         #historical salary growth scales for each plan
         MATTCsalscale.VMERS.hist = as.numeric(unlist(select(SS,sscale.hist.rate)))
@@ -228,6 +215,45 @@ library(XLConnect) # slow but convenient because it reads ranges
           row.names = c(NA, -length(MATTCplannames))
         )
 
+        MATTCplannamesage = c( rep("VMERS.age", MATTCsalgrowth.assume.age.rangesize), 
+                            rep("VSERS.age", MATTCsalgrowth.assume.age.rangesize), 
+                            rep("VSTRS.age", MATTCsalgrowth.assume.age.rangesize))
+        MATTCplannamesyos = c( rep("VMERS.yos", MATTCsalgrowth.assume.age.rangesize), 
+                            rep("VSERS.yos", MATTCsalgrowth.assume.age.rangesize), 
+                            rep("VSTRS.yos", MATTCsalgrowth.assume.age.rangesize))
+        
+        MATTCsalgrowthage <- structure( #MattC new structure added
+          list(
+            planname = MATTCplannamesage, 
+            salgrowth = MATTCsscale.rates.assume,
+            age = MATTCageranges,
+            yos = as.numeric(rep(NA,length(MATTCageranges))) 
+          ), 
+          .Names = c("planname",
+                     "salgrowth",
+                     "age",
+                     "yos"),
+          class = "data.frame",
+          row.names = c(NA, -length(MATTCplannamesage))
+        )
+        
+        MATTCsalgrowthyos <- structure( #MattC new structure added
+          list(
+            planname = MATTCplannamesyos, 
+            salgrowth = MATTCsscale.rates.assume,
+            #age = as.numeric(rep(NA,length(MATTCageranges))),
+            yos = rep(seq(from = 0, to = length(MATTCageranges)/3-1, by = 1), 3)
+          ), 
+          .Names = c("planname", 
+                     "salgrowth",
+                    # "age",
+                     "yos"),
+          class = "data.frame",
+          row.names = c(NA, -length(MATTCplannamesyos))
+        )
+        
+        #MATTCsalgrowth <- rbind(MATTCsalgrowthage,MATTCsalgrowthyos)
+        MATTCsalgrowth <- MATTCsalgrowthyos
 #RETIREES 
       retage.mid <- c(#MATTC_retstart, 
                 seq(MATTC_retstart+MATTC_retincrement, MATTC_retend-MATTC_retincrement, MATTC_retblocksize), 

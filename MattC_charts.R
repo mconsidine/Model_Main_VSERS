@@ -11,6 +11,7 @@ library(tidyr)
 library(ggplot2)
 library(knitr)
 library(magrittr) # to use %<>%
+library(plotrix)
 
 #rm(list = ls())
 source("MattC_graphics.R")
@@ -21,7 +22,7 @@ source("Functions.R")
 #{r Read, echo=FALSE, include = FALSE}
 
 folder_run <- "IO_M2.1_new"
-file_select <- dir(folder_run, pattern = "Outputs_VSERS_") #20180705190559.RData
+file_select <- dir(folder_run, pattern = "Outputs_VSERS_20180706") #20180705190559.RData
 
 fn <- function(x) {
   load(paste0(folder_run, "/", x))
@@ -84,16 +85,16 @@ r1$PR_growth
 
 #{r S4, echo = FALSE, cache = F}
 
-prefix <- "R4F"
+#prefix <- "R4F"
+#draw_quantiles(paste0(prefix, 1:3), "FR", ylim = c(-5, 250))
+draw_quantiles(runName="VSERS", "FR", ylim = c(-5, 250))
+MATTC_draw_quantiles(runName="VSERS", "FR", ylim = c(-5, 250), yscaleincr=50) %>% print #MattC
 
-draw_quantiles(paste0(prefix, 1:3), "FR", ylim = c(-5, 250))
-MATTC_draw_quantiles(paste0(prefix, 1:3), "FR", ylim = c(-5, 250), yscaleincr=50) %>% print #MattC
+draw_quantiles(runName="VSERS", "ERC_PR", ylim = c(-2, 30)) %>% print #MattC
 
-draw_quantiles(paste0(prefix, 1:3), "ERC_PR", ylim = c(-2, 30)) %>% print #MattC
+draw_quantiles(runName="VSERS", "C_PR", ylim = c(-2, 30)) %>% print #MattC
 
-draw_quantiles(paste0(prefix, 1:3), "C_PR", ylim = c(-2, 30)) %>% print #MattC
-
-draw_quantiles(paste0(prefix, 1:3), "B_PR") %>% print #MattC
+draw_quantiles(runName="VSERS", "B_PR") %>% print #MattC
 
 
 # Scenario 6 
@@ -127,19 +128,19 @@ abline(v = 0.075, col = "red")
 
 #{r move_file, eval= FALSE}
 ##################################################################MattC code starts here
-dev.off()
-prefix <- "R4F"
+#dev.off()
+#prefix <- "R4F"
 
-draw_quantiles(paste0(prefix, 1:3), "FR", ylim = c(-5, 250)) %>% print
+#draw_quantiles(paste0(prefix, 1:3), "FR", ylim = c(-5, 250)) %>% print
 
 library(plotrix)
-matttest1 <- MATTC_get_quantiles(runName = paste0(prefix, 1:3), 
+matttest1 <- MATTC_get_quantiles(runName="VSERS", 
                             varName = "FR",
                             data    = results_all,
                             year.max = 80,
                             qts = c(0.1, 0.25, 0.5, 0.75, 0.9)) #  %>% 
   #gather(Quantile, Value, -runname, -year)
-#matttest1<-get_quantiles(paste0(prefix, 1:3), "FR") #%>% print
+matttest1<-get_quantiles(runName="VSERS", "FR") %>% print
 vals <- matttest1[,-c(1,2)]
 qbreaks <- dim(vals)[2]
 qhalf <- (qbreaks-1)/2

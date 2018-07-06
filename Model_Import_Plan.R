@@ -75,7 +75,7 @@ SS.all <- expand.grid(start.year = (1 - (max.age - min.age)):nyear, ea = range_e
   filter(age >= ea, start.year + r.max - 1 - ea >= 1 ) %>% # workers must stay in workforce at least up to year 1. 
   # arrange(start.year, ea, age) %>%
   mutate(yos = age - ea) %>% 
-  left_join(sscale) %>%
+  left_join(sscale) %>% #MattC  salgrowth column not surviving this?? check AZ-PERS
   group_by(start.year, ea) %>% 
   mutate(year = start.year + (age - ea),
          growth.start = (1 + startingSal_growth)^(start.year - 1), # assume starting salary grows at the rate of inflation for all entry ages 

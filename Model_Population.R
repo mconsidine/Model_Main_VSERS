@@ -6,7 +6,10 @@ get_Population <- function(.init_pop = init_pop,
                            .entrants_dist= entrants_dist,
                            .paramlist    = paramlist,
                            .Global_paramlist = Global_paramlist){
-
+.init_pop <- init_pop
+.entrants_dist <- entrants_dist
+.paramlist <- paramlist
+.Global_paramlist <- Global_paramlist
 ## Issues
  # growth of workforce(controlled by growth rate or pre-defined path of growth.)
 
