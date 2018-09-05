@@ -1,0 +1,363 @@
+Model_Main (master)
+
+{Install_Packages.R}
+
+Following wouldn't be used for actual data (?)
+	{inputs_import_winklevoss.R} #used to create /Data/winklevossdata.RData
+	-> used by template RunControl.R
+	-> used by RunControl_reprod_M1
+	-> used by RunControl_reprod_M2
+	-> referenced in Model_Master.
+	{inputs_salary_benefit.r} #used to create /Data/example_Salary_benefit.RData
+	{import_az_retrate.r} #used to create /Data/retrates_AZ_RData
+
+make_prototypes(14).R
+	-> create datasets found under /Data/2015-10-07, except for mortality.rda
+***Question for Yimeng: what code generates mortality.rda?
+
+Reproducibility_guide.R
+---------------------------------------
+## Run model for report M1
+source("Model_RunControl_reprod_M1.R")
+# Change column C in "/IO_M1_new/Repord_RunControl_M1_new.xlsx)" to 
+# include more simulations.
+
+# Initial actives and retirees 
+# Load data for new prototypes before they are in the pp.prototypes package
+load("Data/2015-10-07/actives.rda")
+load("Data/2015-10-07/retirees.rda") 
+
+# Decrements
+load("Data/2015-10-07/retrates.rda");  retrates %<>% dplyr::rename(qxr = retrate)
+# load("Data/retrates_AZ.RData"); retrates <- retrate_AZ
+load("Data/2015-10-07/termrates.rda"); termrates %<>% dplyr::rename(qxt = termrate) # %>% mutate(qxt = 0.5*qxt)
+load("Data/2015-10-07/mortality.rda")
+load("Data/winklevossdata.rdata") # disability, disability mortaity and early retirement
+
+# Salary scale
+load("Data/2015-10-07/salgrowth.rda"); salgrowth %<>% mutate(age = NULL)
+
+source("Functions.R")
+
+folder_run <- "IO_M1_new" 
+filename_RunControl <-"Reprod_RunControl_M1_new.xlsx"
+
+source("Model_Master.R", echo = TRUE)
+
+-----------------------------------------------------------------------------
+## Run model for report M2.1a and M2.1b
+source("Model_RunControl_reprod_M2.1.R")
+# Change column C in "/IO_M2.1_new/Repord_RunControl_M2.1_new.xlsx)" to 
+# include more simulations.
+
+# Initial actives and retirees 
+# Load data for new prototypes before they are in the pp.prototypes package
+load("Data/2015-10-07/actives.rda")
+load("Data/2015-10-07/retirees.rda") 
+
+# Decrements
+load("Data/2015-10-07/retrates.rda");  retrates %<>% dplyr::rename(qxr = retrate)
+# load("Data/retrates_AZ.RData"); retrates <- retrate_AZ
+load("Data/2015-10-07/termrates.rda"); termrates %<>% dplyr::rename(qxt = termrate) # %>% mutate(qxt = 0.5*qxt)
+load("Data/2015-10-07/mortality.rda")
+load("Data/winklevossdata.rdata") # disability, disability mortaity and early retirement
+
+# Salary scale
+load("Data/2015-10-07/salgrowth.rda"); salgrowth %<>% mutate(age = NULL)
+
+source("Functions.R")
+
+folder_run <- "IO_M2.1_new"
+#filename_RunControl <- dir(folder_run, pattern = "^RunControl")
+filename_RunControl <- "Reprod_RunControl_M2.1_new.xlsx"
+
+source("Model_Master.R", echo = TRUE)
+
+------------------------------------------------------------------------------
+## Where are the outputs saved
+# Report M1:      "IO_M1_new/"
+# Report M2.1a/b: "IO_M2.1_new/"
+
+
+#**************************************************************************************
+#                      Producing graphs and tables                                 ####
+#**************************************************************************************
+
+## Producing graphs and tables
+source("IO_M1_new/Report_M1.R")  
+
+runsd       <- "IO_M1_new/"
+outputs.dir <- "IO_M1_new/M1_outputs/"
+
+runs <- c("A1F075_0", 
+          "A1F075_C15d", "A1F075_C15p", "A1F075_C30d", "A1F075_C30p", "A1F075_C30pA5",
+          "A1F075_O15d", "A1F075_O15p", "A1F075_O30d", "A1F075_O30p", "A1F075_O30pA5", "A1F075_O30pA5_cap",
+          "A1F075_soa3")
+
+-------------------------------------------------------------------------------
+source("IO_M2.1_new/Report_M2.1a.R")
+
+source("Functions.R")
+source("Functions_Measures.R")
+
+IO_folder       <- "IO_M2.1_new"
+outputs.folder  <- "/M2.1a_outputs/
+
+save(results_all, file = paste0(IO_folder, "/Analysis_Demo/Demo_results_all.RData"))
+
+## Outputs of demographics
+source("IO_M2.1_new/Report_M2.1a_LoadingDemoData.R")
+
+## Loading existing data. 
+load(paste0(IO_folder, "/Analysis_Demo/Demo_results_all.RData"))
+load(paste0(IO_folder, "/Analysis_Demo/DemoSum_all.RData"))
+
+runs_demo.all <- c("D1F075-average_gn2",
+                   "D1F075-average_gn1",
+                   "D1F075-average",
+                   "D1F075-average_g1",
+                   "D1F075-average_g2",
+                   "D1F075-mature1_gn1",
+                   "D1F075-mature2_gn1",
+                   "D1F075-immature_g1")
+
+-------------------------------------------------------------------------------
+source("IO_M2.1_new/Report_M2.1b.R")
+
+source("Functions.R")
+source("Functions_Measures.R")
+
+IO_folder <- "IO_M2.1_new"
+outputs.folder  <- "/M2.1b_outputs/"
+runs_inv1 <- c("I8F075-2", # SD = 8%
+               "I8F075-3", # SD = 12%
+               "I8F075-4") # SD = 16%
+
+runs_inv2 <- c("I7F075-1", # the good old days 
+               "I1F075-6", # Invest in riskier assets
+               "I6F075-6") # Lower assumed return
+
+runs_inv3 <- c("I1F075-6",  # True expected return = 7.5%          
+               "I1F075-6b") # True expected return = 6%
+
+saveRDS(fof.q, "./Data/fof.q.rds")
+saveRDS(fof.a, "./Data/fof.a.rds")
+
+fof.a <- readRDS("./Data/fof.a.rds") #MattC fixing folder name
+
+fn <- "NY_CRF_InvestReturnAssumption.xlsx"
+nycrf <- read_excel(paste0("./Data/", fn)) %>% select(fyear, value=crfassumed) %>% mutate(value=value*100, series="nycrf")
+
+t10 <- FRED("DGS10")
+t30 <- FRED("DGS30")
+
+saveRDS(rates.all, "./Data/rates.all.rds")
+rates.all <- readRDS("./Data/rates.all.rds")
+
+rates.all <- readRDS("./Data/rates.all.rds") #MattC fixed directory name
+
+rates.all <- readRDS("./Data/rates.all.rds") #MattC fixed directory name
+
+rates.all <- readRDS("./Data/rates.all.rds") #MattC fixed directory name
+
+# private rates are from Andonov, Bauer, Cremers 2016
+private <- read_csv(
+  "fyear, value
+  1993, 8.214
+  1994, 8.145
+  1995, 7.987
+  1996, 7.972
+  1997, 7.71
+  1998, 7.495
+  1999, 7.961
+  2000, 8.052
+  2001, 7.761
+  2002, 7.469
+  2003, 7.267
+  2004, 6.816
+  2005, 6.643
+  2006, 6.472
+  2007, 6.307
+  2008, 6.512
+  2009, 6.181
+  2010, 5.721
+  2011, 5.112
+  2012, 4.36") %>% mutate(series="privmean")
+
+-------------------------------------------------------------------------------
+## Where are the outputs saved
+ # Report M1:      "IO_M1_new/"
+ # Report M2.1a:   "IO_M2.1_new/M2.1a_outputs"
+ # Report M2.1b:   "IO_M2.1_new/M2.1b_outputs"
+
+-------------------------------------------------------------------------------
+/IO_M1_new/trade-off.R #contribution volatility and funded status analysis
+/IO_M1_new/Report_M1_MFC2017.R
+/IO_M1_new/NTA2016/Report_M1_NTA2016.R
+
+/IO_M2.1_new/Results_Measures.R #uses D1F050 scenarios
+
+/IO_M2.1_new/Analysis_Ben_Loading.R #uses benefits scenarios #has problems with superceded function???
+	->/IO_M2.1_new/Analysis_Ben_Risk.R
+
+/IO_M2.1_new/Analysis_Demo_Loading.R #uses benefits scenarios #has problems with superceded function???
+/IO_M2.1_new/Analysis_Demo_all.R
+/IO_M2.1_new/Analysis_Demo_report.R
+/IO_M2.1_new/Analysis_Demo_risks.R
+/IO_M2.1_new/Analysis_Demo_SingleRun.R
+
+/IO_M2.1_new/Analysis_Investment_Loading.R #needs MA???
+/IO_M2.1_new/Analysis_Investment_Risk.R
+
+/IO_M2.1_new/Analysis_M2.1_checkIssues.R #needs runname, ie another routine to have already run
+
+/IO_M2.1_new/Analysis_Outputs_M2.1_new.Rmd
+/IO_M2.1_new/Analysis_Outputs_M2.1a_report.Rmd
+/IO_M2.1_new/Analysis_Outputs_M2.1_June2016.Rmd
+
+/IO_M2.1_new/Boyd_OrderOfReturns(1).R
+/IO_M2.1_new/Report_M2.1b_MFC2017.R
+
+/IO_M2.1history_new/getReturn.R
+/IO_M2.1history_new/Analysis_Outputs_M2.1history_new.Rmd
+
+--------- General Flow -------------
+make_prototypes(14).R {customized??}
+Model_RunControl.R {customized}
+Model_Master.R
+	{Dev_Params.R}
+	source("Model_Decrements.R")
+	source("Model_Import_Plan.R")
+	source("Model_InvReturns.R")
+	source("Model_Population.R")
+	source("Model_IndivLiab.R")
+	source("Model_AggLiab.R")
+	source("Model_Sim.R")
+Report_M1.R {customized}
+Report_M2.1a.R {customized}
+Report_M2.1b.R {customized]
+----- General Flow from NC example-----------------
+RunControl
+  # Master_singleTier
+  # Master_allTiers
+  
+  # Data_RP2000
+  # Data_PlanInfo 
+  # Data_ImportMemberData
+  
+  # Model_decrements
+  # Model_InvReturns
+  # Model_PrepData
+  # Model_Demographics
+  # Model_ContingentAnnuity
+  # Model_IndivLiab
+  # Model_AggLiab
+  # Model_Sim
+----------------------
+Misc, not used:
+data_ppd_get_and_save_ppd(4).r
+data_ppd_stats_main.rmd
+----------------------
+RunControl
+->Functions.R
+-> SingleTier
+ # source("NCTSERS_Data_PlanInfo_AV2016.R")
+ # source("NCTSERS_Data_MemberData_AV2016.R"
+load("Data_inputs/NCTSERS_PlanInfo_AV2016.RData")    # for all tiers
+load("Data_inputs/NCTSERS_MemberData_AV2016.RData")  # for all tiers
+load("Results/df_riskFreeALNC.RData")
+source("NCTSERS_Model_Decrements.R")
+source("NCTSERS_Model_InvReturns.R")
+source("NCTSERS_Model_PrepData.R")
+source("NCTSERS_Model_Demographics.R")
+source("NCTSERS_Model_ContingentAnnuity_generational.R")
+source("NCTSERS_Model_IndivLiab.R")
+source("NCTSERS_Model_AggLiab.R")
+source("NCTSERS_Model_Sim.R")
+
+NCTSERS_Data_RP2014.R
+NCTSERS_Fiscal.R
+NCTSERS_Model_ContingentAnnuity.R
+NCTSERS_Model_RiskFreeFun.R
+NCTSERS_Results_Measures1.R
+Utility_makeReturns.R
+----------------------------------------------------
+c("year",	"AL",	# AL: Total Actuarial liability, which includes liabilities for active workers and pensioners.  
+		"NC",	  # NC: Normal Cost
+		#"MA",	  # MA: Market value of assets.
+		"AA",	  # AA: Actuarial value of assets.
+		#"EAA",	  # EAA:Expected actuarial value of assets.
+		"UAAL",	# UAAL: Unfunded accrued actuarial liability, defined as AL - NC
+		#"EUAAL",  # EUAAL:Expected UAAL.
+		#"PR",	  # PR: payroll
+		#"LG",	# LG: Loss/Gain, total loss(positive) or gain(negative), Caculated as LG(t+1) = (UAAL(t) + NC(t))(1+i) - C - Ic - UAAL(t+1),
+		#"AM",  # AM: Amount to be amortized at period t. 
+		#"i",	# i: is assumed interest rate. ELs of each period will be amortized seperately.
+		"SC",  # SC: Supplement cost 
+		"FR",  # FR: Funded Ratio: AA / AL
+		#"ADC",  # ADC: actuarially required contribution by employer. NC + SC - EEC
+		"B",	  # B : Total beneift Payment
+		"C",  # C : Actual contribution
+                #"C_ADC", # C_ADC: shortfall in paying ADC
+		#"Ia",	# Ia: Assumed interest from AA, equal to i*AA if the entire asset is investible. 
+		#"Ib",	# Ib: Assumed interest loss due to benefit payment, equal to i*B if the payment is made at the beginning of period
+		#"Ic",  # Ic: Assumed interest from contribution, equal to i*C if C is made at the beginning of time period. i.r is real rate of return.
+		#"C_PR"	# C_PR: contribution as % of payroll; C_PR = 100 * C / PR,
+
+		"AL.act_PR", #AL.act_PR    = 100 * AL.act / PR, 
+		"AL.ret_PR", #AL.ret_PR    = 100 * AL.ret / PR,
+		"AL.term_PR", #AL.term_PR   = 100 * AL.term / PR,
+		"AL.Ben_PR", #AL.Ben_PR    = 100 * AL.Ben / PR,
+		"NC.act_PR",	#NC.act_PR    = 100 * NC.act / PR, 
+		"NC.term_PR", 	#NC.term_PR   = 100 * NC.term / PR,
+		"MA_PR", #MA_PR   = 100 * MA / PR,
+
+		"B.v", #??????????
+		"B.v_B", #???????????
+		"B_PR" #B_PR    = 100 * B / PR,
+
+                #"AL_PR", #AL_PR = 100 * AL / PR,
+		#"NC_PR", #NC_PR = 100 * NC / PR,
+		#"SC_PR", #SC_PR = 100 * SC / PR,
+		#"ERC_PR", #ERC_PR = 100 * ERC / PR,
+                #"PR.growth", #PR.growth = ifelse(year > 1, 100 * (PR / lag(PR) - 1), NA)
+                "ExF",	#ExF = C - B,  
+                "EEC",
+		"ERC",  
+                #"I.r",# I.r : Total ACTUAL interest gain, I = i.r*(AA + C - B), if AA is all investible, C and B are made at the beginning of period.
+		#"I.e"
+                #"i.r"
+                #"dERC_PR"
+
+           	"FR_MA", #FR_MA   = 100 * MA / exp(log(AL)),
+           	#"UAAL_PR", #UAAL_PR = 100 * UAAL / PR,
+           	#"AA_PR", #AA_PR   = 100 * AA / PR,
+           	#"ADC_PR", #ADC_PR  = 100 * ADC / PR,
+           	#"ExF_PR", #ExF_PR  = 100 * ExF / PR,
+           	"ExF_MA" #ExF_MA  = 100 * ExF / MA,
+		#"nactives"
+		#"nretirees"
+		#"nterm"
+)
+
+============================
+automatically exporting the following variables from the local environment:
+  amort_method, amort_type, ConPolicy, EAA_0, EEC_fixed, EEC_rate, i, init_EAA, init_MA, m, MA_0, MA_0_pct, nonNegC, nyear, penSim0, plan_contributions, PR_pct_cap, PR_pct_fixed, salgrowth_amort, SC_amort0, smooth_method, s.vector, s.year, w 
+--------------------------------------------------------
+
+Changes from MattC:
+
+trade-off.R
+Reprod_RunControl_M1_new.xlsx
+
+Analysis_Demo_Loading.R
+Analysis_Demo_SingleRun.R
+Report_M2.1a.R
+Report_M2.1b.R
+Results_Measures.R
+Reprod_RunControl_M2.1_new.xlsx
+
+Functions.R
+Model_Master.R
+Model_RunControl_reprod_M1.R
+Model_RunControl_reprod_M2.1R
