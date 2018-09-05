@@ -3,6 +3,7 @@
 # Create filled-in version of actives data.
 
 # AZ PERS ppdid 6
+# Editted for Vermont data - MattC 20180905
 
 # Revisions
 #  10/7/2015
@@ -15,8 +16,8 @@
 #****************************************************************************************************
 #                    Global constants ####
 #****************************************************************************************************
-
-dir <- "Data/2015-10-07/" #MattC to fix name
+setwd("/home/matt/Downloads/PensionSimulator/Model_Main-VSERS/Data/2015-10-07/") #MattC
+dir <- "." #MattC to fix name
 fn <- "Prototype inputs(14).xlsx"
 
 
@@ -32,7 +33,7 @@ options(dplyr.print_max = 60) # default is 20
 library("foreign") # various import and export routines - e.g., for reading Stata files
 library("knitr")
 library("lubridate")
-# devtools::install_github("hadley/ggplot2") # latest version arranges grobs
+#devtools::install_github("hadley/ggplot2") # latest version arranges grobs
 library("ggplot2")
 library("readr")
 library("readxl")
@@ -274,13 +275,14 @@ checkactives <- function(adf) {
 
 make_plist <- function(planname, actives, retirees, salgrowth, termrates) {
   # make and save a list of dataframes for a single plan
-  dir <- "./data-raw/"
+#  dir <- "/home/matt/Downloads/PensionSimulator/Model_Main-VSERS/Data/2015-10-07/" #"./data-raw/" #MattC
   plist <- list()
   plist$actives <- actives
   plist$retirees <- retirees
   plist$salgrowth <- salgrowth
   plist$termrates <- termrates
-  saveRDS(plist, paste0(dir, planname, ".rds"))
+#  saveRDS(plist, paste0(dir, planname, ".rds"))
+  saveRDS(plist,paste0(planname,".rds")) #MattC
   return(NULL)
 }
 
@@ -800,7 +802,8 @@ fillin.retirees <- function(lretirees) {
 #****************************************************************************************************
 #                    Prototypical termination rates ####
 #****************************************************************************************************
-
+#dir <- "/home/matt/Downloads/PensionSimulator/Model_Main-VSERS/Data/2015-10-07/" #"./data-raw/" #MattC
+dir <- "./"
 sheet <- "proto.termrates"
 range <- xlrange(dir, fn, sheet, "B2", "B3")
 df <- readWorksheetFromFile(paste0(dir, fn), sheet=sheet, header=TRUE, region=range, colTypes="character")
@@ -813,15 +816,13 @@ ptermrates <- df %>% gather(planname, termrate, -yos) %>%
 
 saveRDS(ptermrates, paste0(dir, "proto_termrates.rds"))
 
-
-
-
 #****************************************************************************************************
 #                    Prototypical retirement rates ####
 #****************************************************************************************************
 
 sheet <- "proto.retrates"
-range <- xlrange(dir, fn, sheet, "B2", "B3")
+#setwd(dir) #MattC
+range <- xlrange(dir, fn, sheet, "B2", "B3") #MattC
 df <- readWorksheetFromFile(paste0(dir, fn), sheet=sheet, header=TRUE, region=range, colTypes="character")
 
 # now make long file
@@ -832,6 +833,49 @@ retrates <- df %>% gather(planname, retrate, -age) %>%
 
 saveRDS(retrates, paste0(dir, "proto_retrates.rds"))
 
+#****************************************************************************************************
+#                    VT-VSERS ####
+#****************************************************************************************************
+
+plan <- "VT-VSERS"
+
+lactives <- getactives(plan, dir=dir, fn=fn)
+adf.grouped <- lactives$actives.ea
+
+lretirees <- getretirees(plan, dir=dir, fn=fn)
+rdf.grouped <- lretirees$retirees
+
+sgdf <- bind_rows(getsalgrowth.age(plan, dir=dir, fn=fn), getsalgrowth.yos(plan, dir=dir, fn=fn))
+trdf <- gettermrates(plan, dir=dir, fn=fn)
+
+# fill in actives
+# adf.fillin <- fillin.actives(lactives, sgdf, inflation=.0)
+# adf.fillinx3 <- fillin.actives(lactives, sgdf, inflation=.03) %>% mutate(planname=paste0(planname, ".x3pct"))
+# adf <- bind_rows(adf.grouped, adf.fillin, adf.fillinx3)
+# adf.fillin <- fillin.actives(lactives, sgdf, inflation=.03)
+# adf.fillinunif <- fillin.actives.uniform(lactives) %>% mutate(planname=paste0(planname, ".unif"))
+adf.fillin <- fillin.actives.spreadea.splineage(lactives) %>%
+  select(planname, age, ea, age.cell, ea.cell, nactives, salary=salary.final)
+
+adf.fillin.yos <- fillin.actives.spreadyos.splineage(lactives) %>%
+  select(planname, age, ea, age.cell, ea.cell, nactives, salary=salary.final)
+
+checkactives(adf.grouped)
+checkactives(adf.fillin)
+checkactives(adf.fillin.yos)
+
+adf <- bind_rows(adf.grouped, adf.fillin, adf.fillin.yos)
+
+# adf.fillin.yos %>% group_by(ea.cell) %>% summarise(lb=min(ea), ub=max(ea))
+# glimpse(adf.fillin)
+# glimpse(adf.fillin2)
+# glimpse(adf.fillinunif)
+
+# fill in retirees
+rdf.fillin <- fillin.retirees(lretirees)
+rdf <- bind_rows(rdf.grouped, rdf.fillin)
+
+make_plist(plan, actives=adf, retirees=rdf, salgrowth=sgdf, termrates=trdf) # save a file for this plan
 
 
 #****************************************************************************************************
@@ -994,7 +1038,7 @@ make_plist(plan, actives=adf, retirees=rdf, salgrowth=sgdf, termrates=trdf) # sa
 #                    Combine files (multiple plans) ####
 #****************************************************************************************************
 # Each prototype is a list with 4 data frames. Create 4 data frames, each of which has data for all prototypes.
-plannames <- c("AZ-PERS-6", "LA-CERA-43", "OH-PERS-85", "WA-PERS2-119") # a vector of plannames
+plannames <- c("VT-VSERS", "AZ-PERS-6", "LA-CERA-43", "OH-PERS-85", "WA-PERS2-119") # a vector of plannames
 
 getplan <- function(plan) readRDS(paste0(dir, paste0(plan, ".rds")))
 biglist <- llply(plannames, getplan)
@@ -1013,22 +1057,25 @@ retrates <- readRDS(paste0(dir, "proto_retrates.rds"))
 #****************************************************************************************************
 #                    Now save the combined data frames ####
 #****************************************************************************************************
-use_data(actives, overwrite = TRUE)
-use_data(retirees, overwrite = TRUE)
-use_data(salgrowth, overwrite = TRUE)
-use_data(termrates, overwrite = TRUE)
-use_data(retrates, overwrite = TRUE)
-
-
+#use_data(actives, overwrite = TRUE) #MattC
+#use_data(retirees, overwrite = TRUE) #MattC
+#use_data(salgrowth, overwrite = TRUE) #MattC
+#use_data(termrates, overwrite = TRUE) #MattC
+#use_data(retrates, overwrite = TRUE) #MattC
+save(actives, file="actives.rda") #MattC
+save(retirees, file="retirees.rda") #MattC
+save(salgrowth, file="salgrowth.rda") #MattC
+save(termrates, file="termrates.rda") #MattC
+save(retrates, file="retrates.rda") #MattC
 
 #****************************************************************************************************
 #                    Get the data and examine ####
 #****************************************************************************************************
-load("./data/actives.rda")
-load("./data/retirees.rda")
-load("./data/salgrowth.rda")
-load("./data/termrates.rda")
-load("./data/retrates.rda")
+load("actives.rda") #MattC
+load("retirees.rda") #MattC
+load("salgrowth.rda") #MattC
+load("termrates.rda") #MattC
+load("retrates.rda") #MattC
 
 glimpse(actives)
 glimpse(retirees)
@@ -1053,7 +1100,7 @@ actives %>% filter(!str_detect(planname, "unif")) %>%
   summarise(salary=sum(salary * nactives) / sum(nactives)) %>%
   qplot(age, salary, data=., colour=planname, geom=c("point", "line"))
 
-actives %>% filter(str_detect(planname, "WA")) %>%
+actives %>% filter(str_detect(planname, "VT")) %>% #MattC
   group_by(planname, age) %>%
   summarise(salary=sum(salary * nactives) / sum(nactives)) %>%
   qplot(age, salary, data=., colour=planname, geom=c("point", "line"))
@@ -1083,7 +1130,7 @@ termrates %>% qplot(yos, termrate, data=., colour=planname, geom=c("point", "lin
 retrates %>% qplot(age, retrate, data=., colour=planname, geom=c("point", "line"))
 
 
-# actives %>% filter(planname=="AZ-PERS.fillin", age>=40, age<=44) %>%
+# actives %>% filter(planname=="VT-VSERS.fillin", age>=40, age<=44) %>%
 #   select(age, ea, nactives, salary) %>%
 #   write_csv("e:/temp/check.csv")
 #
@@ -1092,7 +1139,7 @@ retrates %>% qplot(age, retrate, data=., colour=planname, geom=c("point", "line"
 
 
 
-actives %>% filter(str_detect(planname, "AZ-")) %>%
+actives %>% filter(str_detect(planname, "VT-")) %>%
   group_by(planname, age) %>%
   summarise(salary=sum(salary * nactives) / sum(nactives)) %>%
   qplot(age, salary, data=., colour=planname, geom=c("point", "line"))
